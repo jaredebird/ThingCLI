@@ -25,7 +25,7 @@ interface InstallProgress {
  * The interface of an entity dependency response row.
  */
 interface EntityDependency {
-    
+
     /**
      * The name of the entity.
      */
@@ -43,7 +43,7 @@ interface EntityDependency {
 declare interface JSONInfoTable<T> {
     rows: T[];
     dataShape: {
-        fieldDefinitions: {[key: string]: unknown}
+        fieldDefinitions: { [key: string]: unknown }
     }
 }
 /**
@@ -82,6 +82,7 @@ let UMLMode = false;
  */
 export async function install(isUMLMode: boolean = false) {
     // Load the twconfig file which contains dependency list.
+    console.log("Local Version of ThingCLI In use");
     const twConfig = require(`${process.cwd()}/twconfig.json`) as TWConfig;
 
     const cwd = process.cwd();
@@ -105,7 +106,7 @@ export async function install(isUMLMode: boolean = false) {
     let progress = 0;
     let entity = '';
 
-    console.log(`\x1b[2m❯\x1b[0m Downloading Thingworx dependencies from ${TWClient.server}\n`);
+    console.log(`\x1b[2m❯\x1b[0m Local Downloading Thingworx dependencies from ${TWClient.server}\n`);
 
     // Create a progress bar to track installation
     const bar = new ProgressBar();
@@ -133,7 +134,7 @@ export async function install(isUMLMode: boolean = false) {
         }
 
         // Delete and fully recreate the tw_imports folder
-        FS.rmSync(`${cwd}/tw_imports`, {recursive: true, force: true});
+        FS.rmSync(`${cwd}/tw_imports`, { recursive: true, force: true });
         FS.mkdirSync(`${cwd}/tw_imports`);
 
         for (const extension of (twConfig.extensionDependencies || [])) {
@@ -289,9 +290,9 @@ async function getEntityDependencies(name, kind): Promise<JSONInfoTable<EntityDe
  * @param name          The name of the project.
  * @returns             A promise that resolves with the infotable of entities in the project.
  */
- async function getProjectEntities(name: string): Promise<JSONInfoTable<{name: string, parentType: string, isSystemObject: boolean}>> {
+async function getProjectEntities(name: string): Promise<JSONInfoTable<{ name: string, parentType: string, isSystemObject: boolean }>> {
     const response = await TWClient.getProjectEntities(name);
-   
+
     if (response.statusCode != 200) {
         throw new Error(`Could not get the entity list for project ${name}.\nServer returned status code ${response.statusCode}\nbody:\n${response.body}`);
     }
@@ -347,10 +348,10 @@ async function getExtension(name: string, slice: number, installProgress: Instal
         if (!FS.existsSync(`./tw_imports/Extensions/`)) {
             FS.mkdirSync(`./tw_imports/Extensions/`);
         }
-    
+
         installedEntities.Extensions = installedEntities.Extensions || {};
         installedEntities.Extensions[name] = true;
-    
+
         FS.writeFileSync(`./tw_imports/Extensions/${name}.d.ts`, definition);
 
         installProgress.progress += slice / 2;
