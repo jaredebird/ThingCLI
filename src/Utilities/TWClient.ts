@@ -150,7 +150,8 @@ export class TWClient {
      *                      the request finishes.
      */
     private static async _performRequest(options: TWClientRequestOptions, method: 'get' | 'post' = 'post'): Promise<TWClientResponse> {
-        const {thingworxServer: host} = this._connectionDetails;
+        console.log("_performRequest Started");
+        const { thingworxServer: host } = this._connectionDetails;
 
         // Automatically prepend the base thingworx url
         options.url = `${host}/Thingworx/${options.url}`;
@@ -163,6 +164,7 @@ export class TWClient {
         });
 
         const url = new URL(options.url);
+        console.log("_performRequest 1");
         const requestOptions: https.RequestOptions = {
             host: url.host,
             hostname: url.hostname,
@@ -170,7 +172,7 @@ export class TWClient {
             port: url.port,
             path: `${url.pathname}${url.search || ''}`
         };
-
+        console.log("_performRequest 2");
         // If a body is specified, add the content length header
         let body: string | Buffer | undefined;
         if (options.body) {
@@ -245,14 +247,14 @@ export class TWClient {
 
         // Set the appropriate authorization header
         this._authorizeRequest(requestOptions);
-
+        console.log("_performRequest 3");
         const client = requestOptions.protocol == 'https:' ? https : http;
 
         // Create and wait for the request to finish
         return await new Promise((resolve, reject) => {
             const request = client.request(requestOptions, (response) => {
                 const chunks: (string)[] = [];
-                
+
                 response.setEncoding('utf8');
                 response.on('data', chunk => chunks.push(chunk));
                 response.on('end', () => {
@@ -270,19 +272,20 @@ export class TWClient {
             });
 
             request.on('error', (err) => {
-              reject(err);
+                reject(err);
             });
-        
+            console.log("_performRequest 4");
             request.on('timeout', () => {
-              request.destroy();
-              reject(new Error('The request timed out'));
+                request.destroy();
+                reject(new Error('The request timed out'));
             });
-        
+            console.log("_performRequest 5");
             if (body) {
                 request.write(body);
             }
             request.end();
         });
+        console.log("_performRequest Completed");
     }
 
     /**
@@ -297,7 +300,7 @@ export class TWClient {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: {packageName: name}
+            body: { packageName: name }
         });
     }
 
@@ -307,7 +310,7 @@ export class TWClient {
      * @returns         A promise that resolves with the server response when
      *                  the operation finishes.
      */
-    static async importExtension(data: {file: fs.ReadStream}): Promise<TWClientResponse> {
+    static async importExtension(data: { file: fs.ReadStream }): Promise<TWClientResponse> {
         return await this._performRequest({
             url: `ExtensionPackageUploader?purpose=import`,
             formData: data
@@ -338,7 +341,7 @@ export class TWClient {
      */
     static async getEntity(name: string, kind: string): Promise<TWClientResponse> {
         const url = `${kind}/${name}${kind == 'Resources' ? '/metadata' : ''}`;
-        return await this._performRequest({url}, 'get');
+        return await this._performRequest({ url }, 'get');
     }
 
     /**
@@ -394,7 +397,7 @@ export class TWClient {
      */
     static async getExtensionTypes(name: string): Promise<TWClientResponse> {
         const url = `Common/extensions/${name}/ui/@types/index.d.ts`;
-        return await this._performRequest({url}, 'get');
+        return await this._performRequest({ url }, 'get');
     }
 
     /**
@@ -409,7 +412,7 @@ export class TWClient {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({packageName: name})
+            body: JSON.stringify({ packageName: name })
         });
     }
 
